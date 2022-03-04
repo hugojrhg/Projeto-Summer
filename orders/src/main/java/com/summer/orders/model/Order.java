@@ -18,63 +18,77 @@ public class Order implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private String nome;
-	private BigDecimal preco;
-	private Integer quantidade;
-
+	private String descricao;
+	private Long id_produto;
+	private Integer qtd_produtos;
+	private BigDecimal valor;
+	
 	
 	public Order() {}
+
+
 	
-	public Order(Long id, String nome, BigDecimal preco, Integer quantidade) {
+	public Order(Long id, String descricao, Long id_produto, Integer qtd_produtos, BigDecimal valor) {
 		super();
 		this.id = id;
-		this.nome = nome;
-		this.preco = preco;
-		this.quantidade = quantidade;
-	
+		this.descricao = descricao;
+		this.id_produto = id_produto;
+		this.qtd_produtos = qtd_produtos;
+		this.valor = valor;
 	}
+
+
 
 	public Long getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
 
-	public String getNome() {
-		return nome;
-	}
-
-	public void setName(String nome) {
-		this.nome = nome;
-	}
-
-	public BigDecimal getPreco() {
-		return preco;
-	}
-
-	public void setPreco(BigDecimal preco) {
-		this.preco = preco;
-	}
-
-	public Integer getQuantidade() {
-		return quantidade;
-	}
-
-	public void setQuantidade(Integer quantidade) {
-		this.quantidade = quantidade;
+	public String getDescricao() {
+		return descricao;
 	}
 
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	public void setDescricao(String descricao) {
+		this.descricao = descricao;
 	}
+
+
+	public Long getId_produto() {
+		return id_produto;
+	}
+
+
+	public void setId_produto(Long id_produto) {
+		this.id_produto = id_produto;
+	}
+
+
+	public Integer getQtd_produtos() {
+		return qtd_produtos;
+	}
+
+
+	public void setQtd_produtos(Integer qtd_produtos) {
+		this.qtd_produtos = qtd_produtos;
+	}
+
+
+	public BigDecimal getValor() {
+		return valor;
+	}
+
+
+	public void setValor(BigDecimal valor) {
+		this.valor = valor;
+	}
+
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id);
+		return Objects.hash(id, id_produto);
 	}
+
 
 	@Override
 	public boolean equals(Object obj) {
@@ -85,12 +99,16 @@ public class Order implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Order other = (Order) obj;
-		return Objects.equals(id, other.id);
+		return Objects.equals(id, other.id) && Objects.equals(id_produto, other.id_produto);
 	}
+
 
 	@Override
 	public String toString() {
-		return "Order [id=" + id + ", nome=" + nome + ", preco=" + preco + ", quantidade=" + quantidade + ", ]";
+		return "Order [id=" + id + ", descricao=" + descricao + ", id_pedido=" + id_produto + ", qtd_produtos="
+				+ qtd_produtos + ", valor=" + valor + "]";
 	}
+	
+	
     
 }

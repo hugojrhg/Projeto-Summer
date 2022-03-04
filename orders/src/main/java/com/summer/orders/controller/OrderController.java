@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
-import com.summer.orders.model.Order;
-import com.summer.orders.service.OrdersService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +18,21 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.summer.orders.feignclients.ProductFeignClient;
+import com.summer.orders.model.Order;
+import com.summer.orders.model.Product;
+import com.summer.orders.service.OrdersService;
+
 @RestController
-@RequestMapping(value = "/Orders")
+@RequestMapping(value = "/orders")
 public class OrderController {
 
     @Autowired
 	private OrdersService ordersService;
 	
+    @Autowired(required=true)
+    private ProductFeignClient productClient;
+    
 	@GetMapping
 	public ResponseEntity<List<Order>> findAll(){
 		
@@ -48,6 +53,10 @@ public class OrderController {
 	public ResponseEntity<Order> createOrder(@RequestHeader(value="api-key") String string,
 			@RequestBody Order order){
 		
+		Product produto = productClient.findById(order.getId_produto()).getBody();
+		BigDecimal qtdProdutosInBigDecimal = new BigDecimal(order.getQtd_produtos());
+		order.setValor(produto.getPreco().multiply(qtdProdutosInBigDecimal));
+		
 		ordersService.saveOrder(order);
 		URI location = URI.create(String.format("/Orders/%s", order.getId()));
 		return ResponseEntity.created(location).body(order);
@@ -59,20 +68,21 @@ public class OrderController {
 	
 		Order oldOrder = ordersService.findById(id);
 		
-		oldOrder.setName(newOrder.getNome());
-		oldOrder.setPreco(newOrder.getPreco());
-		oldOrder.setQuantidade(newOrder.getQuantidade());
+		oldOrder.setDescricao(newOrder.getDescricao());
+		oldOrder.setId_produto(newOrder.getId_produto());
+		oldOrder.setQtd_produtos(newOrder.getQtd_produtos());
+		oldOrder.setValor(newOrder.getValor());
 		
 		final Order ordersResult = ordersService.saveOrder(oldOrder);
 		return ResponseEntity.ok(ordersResult);
 		
 	}
-	//Update Nome produto
-	@PatchMapping("/{id}/nome/{newNome}")
-	public ResponseEntity<Order> patchOrder(@PathVariable Long id, @PathVariable String newNome) {
+	//Update Descricao
+	@PatchMapping("/{id}/descricao/{newDescricao}")
+	public ResponseEntity<Order> patchOrder(@PathVariable Long id, @PathVariable String newDescricao) {
 		try {
 			Order order = ordersService.findById(id);
-			order.setName(newNome);
+			order.setDescricao(newDescricao);
 
 			Order orderResult = ordersService.saveOrder(order);
 
@@ -81,34 +91,8 @@ public class OrderController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	//Update Preco pedido
-	@PatchMapping("/{id}/preco/{newPreco}")
-	public ResponseEntity<Order> patchWorker(@PathVariable Long id, @PathVariable BigDecimal newPreco) {
-		try {
-			Order order = ordersService.findById(id);
-			order.setPreco(newPreco);
-
-			Order orderResult = ordersService.saveOrder(order);
-
-			return ResponseEntity.ok(orderResult);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-	//Update Quantidade
-	@PatchMapping("/{id}/quantidade/{newQuantidade}")
-	public ResponseEntity<Order> patchWorker(@PathVariable Long id, @PathVariable Integer newQuantidade) {
-		try {
-			Order order = ordersService.findById(id);
-			order.setQuantidade(newQuantidade);
-
-			Order orderResult = ordersService.saveOrder(order);
-
-			return ResponseEntity.ok(orderResult);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
+	
+	
 
 	
 	

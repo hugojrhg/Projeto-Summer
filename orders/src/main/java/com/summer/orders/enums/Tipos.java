@@ -1,5 +1,10 @@
 package com.summer.orders.enums;
 
-public class Tipos {
+public enum Tipos {
     
+	PARTE_BAIXO,
+	PARTE_CIMA,
+	ACESSORIO,
+	CORPO_INTEIRO
+	
 }
