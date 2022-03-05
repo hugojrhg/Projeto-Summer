@@ -57,6 +57,14 @@ public class OrderController {
 		BigDecimal qtdProdutosInBigDecimal = new BigDecimal(order.getQtd_produtos());
 		order.setValor(produto.getPreco().multiply(qtdProdutosInBigDecimal));
 		
+		produto.setQuantidade(produto.getQuantidade() - order.getQtd_produtos());
+		if(produto.getQuantidade() < 0 || order.getQtd_produtos() <=0) {
+			return ResponseEntity.badRequest().body(order);
+		}else {
+			productClient.updateProduct(produto.getId(), produto);
+		}
+		
+		
 		ordersService.saveOrder(order);
 		URI location = URI.create(String.format("/Orders/%s", order.getId()));
 		return ResponseEntity.created(location).body(order);
