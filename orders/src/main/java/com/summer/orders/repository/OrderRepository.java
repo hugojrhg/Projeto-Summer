@@ -1,9 +1,9 @@
 package com.summer.orders.repository;
 
-import com.summer.orders.model.Order;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+import com.summer.orders.model.Orders;
+
+public interface OrderRepository extends JpaRepository<Orders, Long> {
     
 }

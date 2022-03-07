@@ -19,8 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.summer.orders.feignclients.ProductFeignClient;
-import com.summer.orders.model.Order;
+import com.summer.orders.feignclients.UserFeignClient;
+import com.summer.orders.model.Orders;
 import com.summer.orders.model.Product;
+import com.summer.orders.model.User;
 import com.summer.orders.service.OrdersService;
 
 @RestController
@@ -33,33 +35,47 @@ public class OrderController {
     @Autowired(required=true)
     private ProductFeignClient productClient;
     
+    @Autowired
+    private UserFeignClient userClient;
+    
 	@GetMapping
-	public ResponseEntity<List<Order>> findAll(){
+	public ResponseEntity<List<Orders>> findAll(){
 		
-		List<Order> orders = ordersService.findAll();
+		List<Orders> orders = ordersService.findAll();
 		return ResponseEntity.ok(orders);
 		
 	}
 	
 	@GetMapping(value="/{id}")
-	public ResponseEntity<Order> findById(@PathVariable Long id) {
+	public ResponseEntity<Orders> findById(@PathVariable Long id) {
 
-		Order order = ordersService.findById(id);
+		Orders order = ordersService.findById(id);
 		return ResponseEntity.ok(order);
 
 	}
 	
 	@PostMapping()
-	public ResponseEntity<Order> createOrder(@RequestHeader(value="api-key") String string,
-			@RequestBody Order order){
+	public ResponseEntity<Orders> createOrder(@RequestHeader(value="api-key") String string,
+			@RequestBody Orders order) throws Exception{
 		
+		User user = new User();
 		Product produto = productClient.findById(order.getId_produto()).getBody();
 		BigDecimal qtdProdutosInBigDecimal = new BigDecimal(order.getQtd_produtos());
 		order.setValor(produto.getPreco().multiply(qtdProdutosInBigDecimal));
 		
+		try {
+			
+			user = userClient.findById(order.getUser()).getBody();
+			
+		}catch(Exception e) {
+			
+			throw new Exception("Usuário não encontrado");
+			
+		}
+		
 		produto.setQuantidade(produto.getQuantidade() - order.getQtd_produtos());
 		if(produto.getQuantidade() < 0 || order.getQtd_produtos() <=0) {
-			return ResponseEntity.badRequest().body(order);
+			throw new Exception("Produtos Insuficientes no Estoque ou Quantidade pedida menor que 1");
 		}else {
 			productClient.updateProduct(produto.getId(), produto);
 		}
@@ -72,27 +88,27 @@ public class OrderController {
 	}
 	
 	@PutMapping(value="/{id}")
-	public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody Order newOrder){
+	public ResponseEntity<Orders> updateOrder(@PathVariable Long id, @RequestBody Orders newOrder){
 	
-		Order oldOrder = ordersService.findById(id);
+		Orders oldOrder = ordersService.findById(id);
 		
 		oldOrder.setDescricao(newOrder.getDescricao());
 		oldOrder.setId_produto(newOrder.getId_produto());
 		oldOrder.setQtd_produtos(newOrder.getQtd_produtos());
 		oldOrder.setValor(newOrder.getValor());
 		
-		final Order ordersResult = ordersService.saveOrder(oldOrder);
+		final Orders ordersResult = ordersService.saveOrder(oldOrder);
 		return ResponseEntity.ok(ordersResult);
 		
 	}
 	//Update Descricao
 	@PatchMapping("/{id}/descricao/{newDescricao}")
-	public ResponseEntity<Order> patchOrder(@PathVariable Long id, @PathVariable String newDescricao) {
+	public ResponseEntity<Orders> patchOrder(@PathVariable Long id, @PathVariable String newDescricao) {
 		try {
-			Order order = ordersService.findById(id);
+			Orders order = ordersService.findById(id);
 			order.setDescricao(newDescricao);
 
-			Order orderResult = ordersService.saveOrder(order);
+			Orders orderResult = ordersService.saveOrder(order);
 
 			return ResponseEntity.ok(orderResult);
 		} catch (Exception e) {

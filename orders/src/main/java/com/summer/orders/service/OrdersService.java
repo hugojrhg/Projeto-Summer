@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.summer.orders.model.Order;
+import com.summer.orders.model.Orders;
 import com.summer.orders.repository.OrderRepository;
 
 @Service
@@ -15,26 +15,26 @@ public class OrdersService {
     @Autowired
     private OrderRepository orderRepository;
     
-    public List<Order> findAll(){
+    public List<Orders> findAll(){
 		
-		List<Order> produtos = orderRepository.findAll();
+		List<Orders> produtos = orderRepository.findAll();
 		return produtos;
 		
 	}
 	
-	public Order findById(Long id) {
-		Optional<Order> order = orderRepository.findById(id);
+	public Orders findById(Long id) {
+		Optional<Orders> order = orderRepository.findById(id);
 		return order.get();
 	}
 	
-	public Order saveOrder(Order order) {
-		Order newOrder = orderRepository.save(order);
+	public Orders saveOrder(Orders order) {
+		Orders newOrder = orderRepository.save(order);
 		return newOrder;
 	}
 	
 	public void deleteOrder(Long id) {
 
-		Optional<Order> order = orderRepository.findById(id);
+		Optional<Orders> order = orderRepository.findById(id);
 
 		orderRepository.delete(order.get());
 	}
