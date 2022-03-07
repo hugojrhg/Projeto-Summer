@@ -3,6 +3,8 @@ package com.summer.users.controller;
 import java.net.URI;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +19,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.summer.users.enums.Tamanhos;
+import com.summer.users.feignclients.OrderFeignClient;
+import com.summer.users.model.OrderList;
 import com.summer.users.model.User;
+import com.summer.users.repository.OrdersRepository;
 import com.summer.users.service.UserService;
 
 @RestController
@@ -28,8 +32,16 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 	
+	@Autowired
+	private OrdersRepository orderRepository;
+	
+	@Autowired
+	private OrderFeignClient orderClient;
+	
 	@GetMapping
 	public ResponseEntity<List<User>> findAll(){
+		
+		orderRepository.saveAll(orderClient.findAll().getBody());
 		
 		List<User> usuarios = userService.findAll();
 		return ResponseEntity.ok(usuarios);
@@ -38,18 +50,29 @@ public class UserController {
 	
 	@GetMapping(value="/{id}")
 	public ResponseEntity<User> findById(@PathVariable Long id) {
-
+		
+		orderRepository.saveAll(orderClient.findAll().getBody());
+		
 		User usuario = userService.findById(id);
 		return ResponseEntity.ok(usuario);
 
 	}
 	
 	@PostMapping()
-	public ResponseEntity<User> createUser(@RequestHeader(value="api-key") String string,
+	public ResponseEntity<User> createUser(@Valid @RequestHeader(value="api-key") String string,
 			@RequestBody User usuario){
 		
-		userService.saveUser(usuario);
+		User trueusuario = usuario;
+		OrderList orderList = new OrderList();
+					
+		orderRepository.saveAll(orderClient.findAll().getBody());
+		
+		orderList.setOrderList(orderClient.findAll().getBody());
+		trueusuario.setCompras(orderList.getOrderList());
+		
+		userService.saveUser(trueusuario);
 		URI location = URI.create(String.format("/usuarios/%s", usuario.getId()));
+		
 		return ResponseEntity.created(location).body(usuario);
 		
 	}
@@ -62,7 +85,7 @@ public class UserController {
 		oldusuario.setNome(newusuario.getNome());
 		oldusuario.setCpf(newusuario.getCpf());
 		oldusuario.setEmail(newusuario.getEmail());
-		oldusuario.setTamanho(newusuario.getTamanho());
+		
 	
 		final User usuarioResult = userService.saveUser(oldusuario);
 		return ResponseEntity.ok(usuarioResult);
@@ -113,20 +136,7 @@ public class UserController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	//Update Tamanho
-	@PatchMapping("/{id}/tamanho/{newTamanho}")
-	public ResponseEntity<User> patchTamanho(@PathVariable Long id, @PathVariable Tamanhos newTamanho) {
-		try {
-			User usuario = userService.findById(id);
-			usuario.setTamanho(newTamanho);
-
-			User userResult = userService.saveUser(usuario);
-
-			return ResponseEntity.ok(userResult);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
+	
 	
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deletWorker(@PathVariable Long id) {
