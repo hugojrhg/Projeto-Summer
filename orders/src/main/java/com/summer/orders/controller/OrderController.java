@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
+import com.summer.orders.exception.OrderNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +48,7 @@ public class OrderController {
 	}
 	
 	@GetMapping(value="/{id}")
-	public ResponseEntity<Orders> findById(@PathVariable Long id) {
+	public ResponseEntity<Orders> findById(@PathVariable Long id) throws OrderNotFoundException {
 
 		Orders order = ordersService.findById(id);
 		return ResponseEntity.ok(order);
@@ -88,32 +89,18 @@ public class OrderController {
 	}
 	
 	@PutMapping(value="/{id}")
-	public ResponseEntity<Orders> updateOrder(@PathVariable Long id, @RequestBody Orders newOrder){
-	
-		Orders oldOrder = ordersService.findById(id);
-		
-		oldOrder.setDescricao(newOrder.getDescricao());
-		oldOrder.setId_produto(newOrder.getId_produto());
-		oldOrder.setQtd_produtos(newOrder.getQtd_produtos());
-		oldOrder.setValor(newOrder.getValor());
-		
-		final Orders ordersResult = ordersService.saveOrder(oldOrder);
-		return ResponseEntity.ok(ordersResult);
-		
+	public ResponseEntity<Orders> updateOrder(@PathVariable Long id, @RequestBody Orders newOrder) throws OrderNotFoundException {
+		var ordersUpdated= ordersService.updateOrder(id,newOrder);
+		return ResponseEntity.ok().body(ordersUpdated);
 	}
+
 	//Update Descricao
 	@PatchMapping("/{id}/descricao/{newDescricao}")
-	public ResponseEntity<Orders> patchOrder(@PathVariable Long id, @PathVariable String newDescricao) {
-		try {
-			Orders order = ordersService.findById(id);
+	public ResponseEntity<Orders> patchOrder(@PathVariable Long id, @PathVariable String newDescricao) throws OrderNotFoundException {
+			var order = ordersService.findById(id);
 			order.setDescricao(newDescricao);
-
 			Orders orderResult = ordersService.saveOrder(order);
-
 			return ResponseEntity.ok(orderResult);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
 	}
 	
 	
@@ -121,7 +108,7 @@ public class OrderController {
 	
 	
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deletWorker(@PathVariable Long id) {
+	public ResponseEntity<Void> deletWorker(@PathVariable Long id) throws OrderNotFoundException {
 		ordersService.deleteOrder(id);
 		return ResponseEntity.noContent().build();
 	}
