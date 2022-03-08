@@ -1,5 +1,6 @@
 package com.summer.orders.feignclients;
 
+import com.summer.orders.exception.UserNotFoundException;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +15,7 @@ import com.summer.orders.model.User;
 public interface UserFeignClient {
 
 	@GetMapping(value = "/{id}")
-	ResponseEntity<User> findById(@PathVariable Long id);
+	ResponseEntity<User> findById(@PathVariable Long id) throws UserNotFoundException;
 		
 	@PutMapping(value="/{id}")
 	public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody Product newusuario);
