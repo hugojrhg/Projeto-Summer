@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
-import com.summer.orders.exception.OrderNotFoundException;
+import com.summer.orders.exception.*;
+import feign.FeignException;
+import feign.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,54 +61,63 @@ public class OrderController {
 	public ResponseEntity<Orders> createOrder(@RequestHeader(value="api-key") String string,
 			@RequestBody Orders order) throws Exception{
 		
-		User user = new User();
-		Product produto = productClient.findById(order.getId_produto()).getBody();
-		BigDecimal qtdProdutosInBigDecimal = new BigDecimal(order.getQtd_produtos());
-		order.setValor(produto.getPreco().multiply(qtdProdutosInBigDecimal));
+		/*User user = new User();
+		try{
+			HttpStatus status=productClient.findById(order.getId_produto()).getStatusCode();
+		}catch (Exception e){
+			throw new ProductNotFoundException("Produto não encontrado");
+		}
+
+		Product produto=productClient.findById(order.getId_produto()).getBody();
+
+
+//		BigDecimal qtdProdutosInBigDecimal = new BigDecimal(order.getQtd_produtos());
+//		order.setValor(produto.getPreco().multiply(qtdProdutosInBigDecimal));
+		order.setValor(produto.getPreco().multiply(BigDecimal.valueOf(order.getQtd_produtos())));
 		
 		try {
-			
 			user = userClient.findById(order.getUser()).getBody();
-			
 		}catch(Exception e) {
-			
-			throw new Exception("Usuário não encontrado");
-			
+			throw new UserNotFoundException("Usuário não encontrado");
 		}
 		
 		produto.setQuantidade(produto.getQuantidade() - order.getQtd_produtos());
-		if(produto.getQuantidade() < 0 || order.getQtd_produtos() <=0) {
-			throw new Exception("Produtos Insuficientes no Estoque ou Quantidade pedida menor que 1");
-		}else {
+		if(order.getQtd_produtos() <=0) {
+			throw new InvalidInputException("Quantidade pedida menor que 1");
+		}else if(produto.getQuantidade() < 0)
+			throw new InsufficientProductException("Produtos insuficientes no estoque");
+		else {
 			productClient.updateProduct(produto.getId(), produto);
 		}
 		
 		
 		ordersService.saveOrder(order);
 		URI location = URI.create(String.format("/Orders/%s", order.getId()));
-		return ResponseEntity.created(location).body(order);
+		return ResponseEntity.created(location).body(order);*/
+
+		var newOrders =ordersService.saveOrder(order);
+		return ResponseEntity.created(URI.create(String.format("/Orders/%s", newOrders.getId())))
+				.body(newOrders);
 		
 	}
 	
 	@PutMapping(value="/{id}")
-	public ResponseEntity<Orders> updateOrder(@PathVariable Long id, @RequestBody Orders newOrder) throws OrderNotFoundException {
+	public ResponseEntity<Orders> updateOrder(@PathVariable Long id, @RequestBody Orders newOrder) throws OrderNotFoundException,
+			InvalidInputException, ProductNotFoundException, UserNotFoundException {
 		var ordersUpdated= ordersService.updateOrder(id,newOrder);
 		return ResponseEntity.ok().body(ordersUpdated);
 	}
 
 	//Update Descricao
 	@PatchMapping("/{id}/descricao/{newDescricao}")
-	public ResponseEntity<Orders> patchOrder(@PathVariable Long id, @PathVariable String newDescricao) throws OrderNotFoundException {
+	public ResponseEntity<Orders> patchOrder(@PathVariable Long id, @PathVariable String newDescricao) throws OrderNotFoundException, InvalidInputException,
+			UserNotFoundException, ProductNotFoundException {
 			var order = ordersService.findById(id);
 			order.setDescricao(newDescricao);
 			Orders orderResult = ordersService.saveOrder(order);
 			return ResponseEntity.ok(orderResult);
 	}
-	
-	
 
-	
-	
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deletWorker(@PathVariable Long id) throws OrderNotFoundException {
 		ordersService.deleteOrder(id);

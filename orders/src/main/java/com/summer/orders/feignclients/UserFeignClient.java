@@ -15,9 +15,9 @@ import com.summer.orders.model.User;
 public interface UserFeignClient {
 
 	@GetMapping(value = "/{id}")
-	ResponseEntity<User> findById(@PathVariable Long id) throws UserNotFoundException;
+	ResponseEntity<User> findById(@PathVariable Long id) ;
 		
 	@PutMapping(value="/{id}")
-	public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody Product newusuario);
+	ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody Product newusuario);
 	
 }

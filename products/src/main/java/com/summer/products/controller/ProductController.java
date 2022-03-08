@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
+import com.summer.products.exception.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class ProductController {
 	}
 	
 	@GetMapping(value="/{id}")
-	public ResponseEntity<Product> findById(@PathVariable Long id) {
+	public ResponseEntity<Product> findById(@PathVariable Long id) throws ProductNotFoundException {
 
 		Product produto = productService.findById(id);
 		return ResponseEntity.ok(produto);
@@ -56,7 +57,7 @@ public class ProductController {
 	}
 	
 	@PutMapping(value="/{id}")
-	public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product newproduto){
+	public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product newproduto) throws ProductNotFoundException {
 	
 		Product oldproduto = productService.findById(id);
 		
