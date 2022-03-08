@@ -1,5 +1,6 @@
 package com.summer.orders.feignclients;
 
+import com.summer.orders.exception.ProductNotFoundException;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,6 @@ public interface ProductFeignClient {
 	ResponseEntity<Product> findById(@PathVariable Long id);
 		
 	@PutMapping(value="/{id}")
-	public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product newproduto);
+	 ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product newproduto);
 	
 }

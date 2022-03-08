@@ -3,6 +3,7 @@ package com.summer.users.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.summer.users.exceptions.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +23,11 @@ public class UserService {
 		
 	}
 	
-	public User findById(Long id) {
-		Optional<User> usuario = userRepository.findById(id);
-		return usuario.get();
+	public User findById(Long id) throws UserNotFoundException {
+		User usuario = userRepository.findById(id).orElseThrow(
+				() -> new UserNotFoundException("Usuário não encontrado")
+		);
+		return usuario;
 	}
 	
 	public User saveUser(User user) {

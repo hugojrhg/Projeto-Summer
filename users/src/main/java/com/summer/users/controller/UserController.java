@@ -5,19 +5,11 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.summer.users.exceptions.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.summer.users.feignclients.OrderFeignClient;
 import com.summer.users.model.OrderList;
@@ -49,7 +41,7 @@ public class UserController {
 	}
 	
 	@GetMapping(value="/{id}")
-	public ResponseEntity<User> findById(@PathVariable Long id) {
+	public ResponseEntity<User> findById(@PathVariable Long id) throws UserNotFoundException {
 		
 		orderRepository.saveAll(orderClient.findAll().getBody());
 		
@@ -78,7 +70,7 @@ public class UserController {
 	}
 	
 	@PutMapping(value="/{id}")
-	public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User newusuario){
+	public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User newusuario) throws UserNotFoundException {
 	
 		User oldusuario = userService.findById(id);
 		
