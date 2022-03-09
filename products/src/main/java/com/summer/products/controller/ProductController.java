@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
+import com.summer.products.exception.InvalidInputException;
 import com.summer.products.exception.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,15 +28,17 @@ import com.summer.products.service.ProductService;
 @RequestMapping(value = "/produtos")
 public class ProductController {
 
+	private final ProductService productService;
+
 	@Autowired
-	private ProductService productService;
-	
+	public ProductController(ProductService productService) {
+		this.productService=productService;
+	}
+
 	@GetMapping
 	public ResponseEntity<List<Product>> findAll(){
-		
 		List<Product> produtos = productService.findAll();
 		return ResponseEntity.ok(produtos);
-		
 	}
 	
 	@GetMapping(value="/{id}")
@@ -43,92 +46,53 @@ public class ProductController {
 
 		Product produto = productService.findById(id);
 		return ResponseEntity.ok(produto);
-
 	}
 	
 	@PostMapping()
 	public ResponseEntity<Product> createProduct(@RequestHeader(value="api-key") String string,
-			@RequestBody Product produto){
+			@RequestBody Product produto) throws InvalidInputException {
 		
 		productService.saveProduct(produto);
-		URI location = URI.create(String.format("/produtos/%s", produto.getId()));
-		return ResponseEntity.created(location).body(produto);
+		return ResponseEntity.created(URI.create(String.format("/produtos/%s", produto.getId()))).body(produto);
 		
 	}
 	
 	@PutMapping(value="/{id}")
-	public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product newproduto) throws ProductNotFoundException {
-	
-		Product oldproduto = productService.findById(id);
-		
-		oldproduto.setName(newproduto.getNome());
-		oldproduto.setPreco(newproduto.getPreco());
-		oldproduto.setQuantidade(newproduto.getQuantidade());
-		oldproduto.setTipo(newproduto.getTipo());
-		
-		final Product produtoResult = productService.saveProduct(oldproduto);
+	public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product newproduto)
+			throws ProductNotFoundException, InvalidInputException {
+
+		Product produtoResult = productService.putProduct(id,newproduto );
 		return ResponseEntity.ok(produtoResult);
 		
 	}
 	//Update Nome
 	@PatchMapping("/{id}/nome/{newNome}")
-	public ResponseEntity<Product> patchProduct(@PathVariable Long id, @PathVariable String newNome) {
-		try {
-			Product produto = productService.findById(id);
-			produto.setName(newNome);
-
-			Product productResult = productService.saveProduct(produto);
-
-			return ResponseEntity.ok(productResult);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<Product> patchProduct(@PathVariable Long id, @PathVariable String newNome) throws ProductNotFoundException, InvalidInputException {
+		var product = productService.patchName(id,newNome);
+		return ResponseEntity.ok(product);
 	}
 	//Update Preco
 	@PatchMapping("/{id}/preco/{newPreco}")
-	public ResponseEntity<Product> patchWorker(@PathVariable Long id, @PathVariable BigDecimal newPreco) {
-		try {
-			Product produto = productService.findById(id);
-			produto.setPreco(newPreco);
-
-			Product productResult = productService.saveProduct(produto);
-
-			return ResponseEntity.ok(productResult);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<Product> patchWorker(@PathVariable Long id, @PathVariable BigDecimal newPreco) throws ProductNotFoundException, InvalidInputException {
+		var product = productService.patchPreco(id,newPreco);
+		return ResponseEntity.ok(product);
 	}
 	//Update Quantidade
 	@PatchMapping("/{id}/quantidade/{newQuantidade}")
-	public ResponseEntity<Product> patchWorker(@PathVariable Long id, @PathVariable Integer newQuantidade) {
-		try {
-			Product produto = productService.findById(id);
-			produto.setQuantidade(newQuantidade);
-
-			Product productResult = productService.saveProduct(produto);
-
-			return ResponseEntity.ok(productResult);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<Product> patchWorker(@PathVariable Long id, @PathVariable Integer newQuantidade) throws ProductNotFoundException, InvalidInputException {
+		var product = productService.patchQuantidade(id,newQuantidade);
+		return ResponseEntity.ok(product);
 	}
 	//Update Tipo
 	@PatchMapping("/{id}/tipo/{newTipo}")
-	public ResponseEntity<Product> patchWorker(@PathVariable Long id, @PathVariable Tipos newTipo) {
-		try {
-			Product produto = productService.findById(id);
-			produto.setTipo(newTipo);
-
-			Product productResult = productService.saveProduct(produto);
-
-			return ResponseEntity.ok(productResult);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<Product> patchWorker(@PathVariable Long id, @PathVariable Tipos newTipo)
+			throws ProductNotFoundException, InvalidInputException {
+		var product = productService.patchTipo(id,newTipo);
+		return ResponseEntity.ok(product);
 	}
 	
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deletWorker(@PathVariable Long id) {
+	public ResponseEntity<Void> deletWorker(@PathVariable Long id) throws ProductNotFoundException {
 		productService.deleteProduct(id);
 		return ResponseEntity.noContent().build();
 	}
