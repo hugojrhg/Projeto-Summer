@@ -2,12 +2,15 @@ package com.summer.payments.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.summer.payments.enums.Tipos;
@@ -21,65 +24,78 @@ public class Payment implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private String notafiscal;
-	private BigDecimal valorpagamento;
-	private Tipos tipo;
-    private Integer parcelas;
+	private LocalDate dataDePagamento = LocalDate.now();
+	@OneToMany(mappedBy= "user", targetEntity = Orders.class)
+	private List<Long> orderId;
+	private Tipos formaPagamento;
+	private BigDecimal valorTotal;
+	private String nomePagante;
+	private Integer parcelas;
 	
 	public Payment() {}
 	
-	public Payment(Long id, String notafiscal, BigDecimal valorpagamento, Tipos tipo, Integer parcelas) {
+	public Payment(Long id, LocalDate dataDePagamento, List<Long> orderId, Tipos formaPagamento, BigDecimal valorTotal,
+			String nomePagante, Integer parcelas) {
 		super();
 		this.id = id;
-		this.notafiscal = notafiscal;
-		this.valorpagamento = valorpagamento;
-		this.tipo = tipo;
-        this.parcelas = parcelas;
+		this.dataDePagamento = dataDePagamento;
+		this.orderId = orderId;
+		this.formaPagamento = formaPagamento;
+		this.valorTotal = valorTotal;
+		this.nomePagante = nomePagante;
+		this.parcelas = parcelas;
 	}
 
 	public Long getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public LocalDate getDataDePagamento() {
+		return dataDePagamento;
 	}
 
-	public String getNotaFiscal() {
-		return notafiscal;
+	public void setDataDePagamento(LocalDate dataDePagamento) {
+		this.dataDePagamento = dataDePagamento;
 	}
 
-	public void setNotaFiscal(String notafiscal) {
-		this.notafiscal = notafiscal;
+	public List<Long> getOrderId() {
+		return orderId;
 	}
 
-	public BigDecimal getValorPagamento() {
-		return valorpagamento;
+	public void setOrderId(List<Long> orderId) {
+		this.orderId = orderId;
 	}
 
-	public void setValorPagamento(BigDecimal valorpagamento) {
-		this.valorpagamento = valorpagamento;
+	public Tipos getFormaPagamento() {
+		return formaPagamento;
 	}
 
-
-	public Tipos getTipo() {
-		return tipo;
+	public void setFormaPagamento(Tipos formaPagamento) {
+		this.formaPagamento = formaPagamento;
 	}
 
-	public void setTipo(Tipos tipo) {
-		this.tipo = tipo;
+	public BigDecimal getValorTotal() {
+		return valorTotal;
 	}
 
-    public Integer getParcelas() {
-        return parcelas;
-    }
+	public void setValorTotal(BigDecimal valorTotal) {
+		this.valorTotal = valorTotal;
+	}
 
-    public void setParcelas(Integer parcelas) {
-        this.parcelas = parcelas;
-    }
+	public String getNomePagante() {
+		return nomePagante;
+	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	public void setNomePagante(String nomePagante) {
+		this.nomePagante = nomePagante;
+	}
+
+	public Integer getParcelas() {
+		return parcelas;
+	}
+
+	public void setParcelas(Integer parcelas) {
+		this.parcelas = parcelas;
 	}
 
 	@Override
@@ -101,7 +117,11 @@ public class Payment implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Product [id=" + id + ", notafiscal=" + notafiscal + "  , valorpagamento=" + valorpagamento + ",  tipo="
-				+ tipo + "parcelas=" + parcelas + " ]";
+		return "Payment [id=" + id + ", dataDePagamento=" + dataDePagamento + ", orderId=" + orderId
+				+ ", formaPagamento=" + formaPagamento + ", valorTotal=" + valorTotal + ", nomePagante=" + nomePagante
+				+ ", parcelas=" + parcelas + "]";
 	}
+
+	
+	
 }
